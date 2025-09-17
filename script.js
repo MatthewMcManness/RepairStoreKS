@@ -13,15 +13,31 @@ const TICKETS = [
   { id: "T-011", device: "Dell Laptop", problem: "Previous repair failed", status: "Re-Work", plan: "basic" }
 ];
 
+// Demo customer database
+const CUSTOMERS = [
+  { id: 1, firstName: "John", lastName: "Smith", phone: "(555) 123-4567", email: "john.smith@email.com", plan: "silver" },
+  { id: 2, firstName: "Sarah", lastName: "Johnson", phone: "(555) 234-5678", email: "sarah.j@email.com", plan: "basic" },
+  { id: 3, firstName: "Mike", lastName: "Davis", phone: "(555) 345-6789", email: "mike.davis@email.com", plan: "silver" },
+  { id: 4, firstName: "Emily", lastName: "Brown", phone: "(555) 456-7890", email: "emily.brown@email.com", plan: "basic" },
+  { id: 5, firstName: "David", lastName: "Wilson", phone: "(555) 567-8901", email: "david.wilson@email.com", plan: "silver" }
+];
+
 // App State
 let currentPage = 'dashboard';
-let activeFilters = new Set(['new', 'diagnosing', 'escalated', 'call-customer', 'waiting-parts', 'waiting-customer', 'progress', 'completed', 'done-shelf', 'closed', 're-work']); // All statuses active by default
+let activeFilters = new Set(['new', 'diagnosing', 'escalated', 'call-customer', 'waiting-parts', 'waiting-customer', 'progress', 'completed', 'done-shelf', 'closed', 're-work']);
 let currentSearch = '';
 let isDarkMode = false;
+let ticketCounter = TICKETS.length;
+let customerCounter = CUSTOMERS.length;
+let selectedCustomer = null;
+let pendingTicketData = null;
+
+// DOM Elements
+const subheader = document.getElementById('subheader');
+const mainContent = document.getElementById('mainContent');
 
 // Theme management
 function initializeTheme() {
-  // Check for saved theme preference or default to light mode
   const savedTheme = localStorage.getItem('theme') || 'light';
   isDarkMode = savedTheme === 'dark';
   applyTheme();
@@ -47,10 +63,6 @@ function toggleTheme() {
   applyTheme();
 }
 
-// DOM Elements
-const subheader = document.getElementById('subheader');
-const mainContent = document.getElementById('mainContent');
-
 // Map status to badge class
 const statusClass = (s) => {
   const key = s.toLowerCase().replace(/\s+/g, '-');
@@ -65,20 +77,18 @@ const statusClass = (s) => {
   if (key === 'done-shelf') return 'done-shelf';
   if (key === 'closed') return 'closed';
   if (key === 're-work') return 're-work';
-  return 'new'; // default
+  return 'new';
 };
 
 // Filter tickets based on current filters
 function getFilteredTickets() {
   let filtered = TICKETS;
   
-  // Apply status filter (only include tickets with active status filters)
   filtered = filtered.filter(ticket => {
     const statusKey = statusClass(ticket.status);
     return activeFilters.has(statusKey);
   });
   
-  // Apply search filter
   if (currentSearch) {
     const searchLower = currentSearch.toLowerCase();
     filtered = filtered.filter(ticket =>
@@ -87,6 +97,24 @@ function getFilteredTickets() {
       ticket.problem.toLowerCase().includes(searchLower) ||
       ticket.status.toLowerCase().includes(searchLower) ||
       ticket.plan.toLowerCase().includes(searchLower)
+    );
+  }
+  
+  return filtered;
+}
+
+// Filter customers based on current filters
+function getFilteredCustomers() {
+  let filtered = CUSTOMERS;
+  
+  if (currentSearch) {
+    const searchLower = currentSearch.toLowerCase();
+    filtered = filtered.filter(customer =>
+      customer.firstName.toLowerCase().includes(searchLower) ||
+      customer.lastName.toLowerCase().includes(searchLower) ||
+      customer.phone.toLowerCase().includes(searchLower) ||
+      customer.email.toLowerCase().includes(searchLower) ||
+      customer.plan.toLowerCase().includes(searchLower)
     );
   }
   
@@ -124,13 +152,211 @@ function renderTickets(containerId) {
   }
 }
 
-// Update ticket counter
+// Render customer list
+function renderCustomers(containerId) {
+  const container = document.getElementById(containerId);
+  const filtered = getFilteredCustomers();
+  
+  container.innerHTML = "";
+  
+  if (filtered.length === 0) {
+    const emptyRow = document.createElement("div");
+    emptyRow.className = "empty-state";
+    emptyRow.innerHTML = `<p>No customers found matching your criteria.</p>`;
+    container.appendChild(emptyRow);
+  } else {
+    filtered.forEach(c => {
+      const row = document.createElement("div");
+      let customerClass = `customer`;
+      if (c.plan === 'silver') customerClass += ' silver';
+      
+      row.className = customerClass;
+      row.innerHTML = `
+        <span>C-${String(c.id).padStart(3, '0')}</span>
+        <span class="customer-name">${c.firstName} ${c.lastName}</span>
+        <span class="customer-contact">${c.phone}</span>
+        <span class="customer-email">${c.email}</span>
+        <span><span class="badge ${c.plan}">${c.plan}</span></span>
+      `;
+      container.appendChild(row);
+    });
+  }
+}
+
+// Update counters
 function updateTicketCounter() {
   const filtered = getFilteredTickets();
   const counter = document.getElementById('ticketCount');
   if (counter) {
     counter.textContent = `${filtered.length} ticket${filtered.length !== 1 ? 's' : ''}`;
   }
+}
+
+function updateCustomerCounter() {
+  const filtered = getFilteredCustomers();
+  const counter = document.getElementById('customerCount');
+  if (counter) {
+    counter.textContent = `${filtered.length} customer${filtered.length !== 1 ? 's' : ''}`;
+  }
+}
+
+// Customer search functionality
+function searchCustomers(query) {
+  if (!query || query.length < 2) return [];
+  
+  return CUSTOMERS.filter(customer => {
+    const fullName = `${customer.firstName} ${customer.lastName}`.toLowerCase();
+    return fullName.includes(query.toLowerCase());
+  });
+}
+
+function showCustomerSuggestions(customers, query) {
+  const suggestions = document.getElementById('customerSuggestions');
+  suggestions.innerHTML = '';
+  
+  if (customers.length === 0) {
+    const addOption = document.createElement('div');
+    addOption.className = 'add-customer-suggestion';
+    addOption.innerHTML = `+ Add "${query}" as new customer`;
+    addOption.addEventListener('click', () => {
+      hideCustomerSuggestions();
+      openAddCustomerModal({ customerName: query });
+    });
+    suggestions.appendChild(addOption);
+  } else {
+    customers.forEach(customer => {
+      const option = document.createElement('div');
+      option.className = 'customer-suggestion';
+      option.innerHTML = `
+        <div class="customer-name">${customer.firstName} ${customer.lastName}</div>
+        <div class="customer-plan">${customer.plan} plan • ${customer.phone}</div>
+      `;
+      option.addEventListener('click', () => {
+        selectCustomer(customer);
+        hideCustomerSuggestions();
+      });
+      suggestions.appendChild(option);
+    });
+    
+    const addOption = document.createElement('div');
+    addOption.className = 'add-customer-suggestion';
+    addOption.innerHTML = `+ Add "${query}" as new customer`;
+    addOption.addEventListener('click', () => {
+      hideCustomerSuggestions();
+      openAddCustomerModal({ customerName: query });
+    });
+    suggestions.appendChild(addOption);
+  }
+  
+  suggestions.classList.add('active');
+}
+
+function hideCustomerSuggestions() {
+  const suggestions = document.getElementById('customerSuggestions');
+  suggestions.classList.remove('active');
+}
+
+function selectCustomer(customer) {
+  selectedCustomer = customer;
+  const input = document.getElementById('customerName');
+  input.value = `${customer.firstName} ${customer.lastName}`;
+}
+
+// Modal management
+function openNewTicketModal() {
+  const modal = document.getElementById('newTicketModal');
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeNewTicketModal() {
+  const modal = document.getElementById('newTicketModal');
+  modal.classList.remove('active');
+  document.body.style.overflow = '';
+  
+  const form = document.getElementById('newTicketForm');
+  form.reset();
+  selectedCustomer = null;
+  hideCustomerSuggestions();
+}
+
+function openAddCustomerModal(ticketData) {
+  pendingTicketData = ticketData;
+  const modal = document.getElementById('addCustomerModal');
+  modal.classList.add('active');
+  
+  if (ticketData && ticketData.customerName) {
+    const nameParts = ticketData.customerName.split(' ');
+    document.getElementById('customerFirstName').value = nameParts[0] || '';
+    document.getElementById('customerLastName').value = nameParts.slice(1).join(' ') || '';
+  }
+}
+
+function closeAddCustomerModal() {
+  const modal = document.getElementById('addCustomerModal');
+  modal.classList.remove('active');
+  
+  const form = document.getElementById('addCustomerForm');
+  form.reset();
+  pendingTicketData = null;
+}
+
+// Add new customer
+function addNewCustomer(customerData) {
+  customerCounter++;
+  const newCustomer = {
+    id: customerCounter,
+    firstName: customerData.firstName,
+    lastName: customerData.lastName,
+    phone: customerData.phone,
+    email: customerData.email,
+    plan: customerData.plan
+  };
+  
+  CUSTOMERS.push(newCustomer);
+  selectedCustomer = newCustomer;
+  
+  const customerNameInput = document.getElementById('customerName');
+  customerNameInput.value = `${newCustomer.firstName} ${newCustomer.lastName}`;
+  
+  closeAddCustomerModal();
+  
+  if (pendingTicketData) {
+    createNewTicket({
+      ...pendingTicketData,
+      customerName: `${newCustomer.firstName} ${newCustomer.lastName}`
+    });
+  }
+}
+
+// Create new ticket
+function createNewTicket(formData) {
+  if (!selectedCustomer) {
+    openAddCustomerModal(formData);
+    return;
+  }
+  
+  ticketCounter++;
+  
+  const newTicket = {
+    id: `T-${String(ticketCounter).padStart(3, '0')}`,
+    device: `${formData.deviceBrand} ${formData.deviceType}`,
+    problem: formData.problemDescription,
+    status: 'New',
+    plan: selectedCustomer.plan
+  };
+  
+  TICKETS.unshift(newTicket);
+  
+  if (currentPage === 'dashboard') {
+    initializePageFunctionality();
+  } else if (currentPage === 'tickets') {
+    renderTickets('ticketList');
+    updateTicketCounter();
+  }
+  
+  closeNewTicketModal();
+  alert(`Ticket ${newTicket.id} created successfully for ${selectedCustomer.firstName} ${selectedCustomer.lastName}!`);
 }
 
 // Page Templates
@@ -211,7 +437,7 @@ const PAGE_TEMPLATES = {
         <div class="panel-head">
           <h2>Tickets</h2>
           <div class="actions">
-            <span id="ticketCount" class="ticket-counter">10 tickets</span>
+            <span id="ticketCount" class="ticket-counter">11 tickets</span>
           </div>
         </div>
         <div class="ticket-head">
@@ -230,24 +456,31 @@ const PAGE_TEMPLATES = {
     subheader: `
       <div class="subheader-content">
         <h1>Customers</h1>
+        <button class="action-btn primary" data-action="new-customer">
+          <span class="btn-icon">+</span>
+          New Customer
+        </button>
         <div class="subheader-actions">
-          <button class="action-btn primary" data-action="new-customer">
-            <span class="btn-icon">+</span>
-            New Customer
-          </button>
-          <input type="search" placeholder="Search customers…" />
+          <input id="customerSearch" type="search" placeholder="Search customers…" />
         </div>
       </div>
     `,
     content: `
       <section class="panel">
         <div class="panel-head">
-          <h2>Customer Management</h2>
+          <h2>All Customers</h2>
+          <div class="actions">
+            <span id="customerCount" class="ticket-counter">5 customers</span>
+          </div>
         </div>
-        <div class="coming-soon">
-          <h3>👥 Customer Management</h3>
-          <p>Customer management features coming soon!</p>
+        <div class="customer-head">
+          <span>ID</span>
+          <span>Name</span>
+          <span>Phone</span>
+          <span>Email</span>
+          <span>Plan</span>
         </div>
+        <div id="customerList" class="customer-list"></div>
       </section>
     `
   },
@@ -341,16 +574,10 @@ function navigateToPage(pageName) {
   currentPage = pageName;
   const template = PAGE_TEMPLATES[pageName];
   
-  // Update page title
   document.title = `Repair Store KS — ${template.title}`;
-  
-  // Update subheader
   subheader.innerHTML = template.subheader;
-  
-  // Update main content
   mainContent.innerHTML = template.content;
   
-  // Update navigation active state
   document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.classList.remove('active');
     if (btn.getAttribute('data-page') === pageName) {
@@ -358,14 +585,12 @@ function navigateToPage(pageName) {
     }
   });
   
-  // Initialize page-specific functionality
   initializePageFunctionality();
 }
 
 // Initialize page-specific functionality
 function initializePageFunctionality() {
   if (currentPage === 'dashboard') {
-    // Dashboard search
     const search = document.getElementById('dashboardSearch');
     if (search) {
       search.addEventListener('input', (e) => {
@@ -374,7 +599,6 @@ function initializePageFunctionality() {
       });
     }
     
-    // Render recent tickets (limit to 6)
     const container = document.getElementById('dashboardTicketList');
     const recentTickets = TICKETS.slice(0, 6);
     container.innerHTML = "";
@@ -395,7 +619,6 @@ function initializePageFunctionality() {
     });
     
   } else if (currentPage === 'tickets') {
-    // Tickets search
     const search = document.getElementById('ticketSearch');
     if (search) {
       search.addEventListener('input', (e) => {
@@ -405,13 +628,11 @@ function initializePageFunctionality() {
       });
     }
     
-    // Filter buttons (now toggles)
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
       btn.addEventListener('click', function() {
         const status = this.getAttribute('data-status');
         
-        // Toggle the filter
         if (activeFilters.has(status)) {
           activeFilters.delete(status);
           this.classList.remove('active');
@@ -425,9 +646,21 @@ function initializePageFunctionality() {
       });
     });
     
-    // Initial render
     renderTickets('ticketList');
     updateTicketCounter();
+    
+  } else if (currentPage === 'customers') {
+    const search = document.getElementById('customerSearch');
+    if (search) {
+      search.addEventListener('input', (e) => {
+        currentSearch = e.target.value.trim();
+        renderCustomers('customerList');
+        updateCustomerCounter();
+      });
+    }
+    
+    renderCustomers('customerList');
+    updateCustomerCounter();
   }
   
   // Action buttons
@@ -435,25 +668,29 @@ function initializePageFunctionality() {
   actionButtons.forEach(btn => {
     btn.addEventListener('click', function() {
       const action = this.getAttribute('data-action');
-      const actionText = this.textContent.trim();
-      alert(`${actionText} functionality would be implemented here!`);
+      
+      if (action === 'new-ticket') {
+        openNewTicketModal();
+      } else if (action === 'new-customer') {
+        openAddCustomerModal();
+      } else {
+        const actionText = this.textContent.trim();
+        alert(`${actionText} functionality would be implemented here!`);
+      }
     });
   });
 }
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize theme first
   initializeTheme();
   
-  // Navigation functionality
   const navButtons = document.querySelectorAll('.nav-btn');
   navButtons.forEach(btn => {
     btn.addEventListener('click', function() {
       const page = this.getAttribute('data-page');
       navigateToPage(page);
       
-      // Close mobile menu
       const mainNav = document.getElementById('mainNav');
       const hamburgerBtn = document.getElementById('hamburgerBtn');
       mainNav.classList.remove('mobile-open');
@@ -461,11 +698,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Theme toggle functionality
   const themeToggle = document.getElementById('themeToggle');
   themeToggle.addEventListener('click', toggleTheme);
 
-  // Hamburger menu functionality
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const mainNav = document.getElementById('mainNav');
   
@@ -474,7 +709,6 @@ document.addEventListener('DOMContentLoaded', function() {
     mainNav.classList.toggle('mobile-open');
   });
 
-  // Close menu when clicking outside
   document.addEventListener('click', function(e) {
     if (!hamburgerBtn.contains(e.target) && !mainNav.contains(e.target)) {
       mainNav.classList.remove('mobile-open');
@@ -482,6 +716,90 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Initialize with dashboard page
+  // Modal functionality
+  const modal = document.getElementById('newTicketModal');
+  const closeModal = document.getElementById('closeModal');
+  const cancelModal = document.getElementById('cancelModal');
+  const newTicketForm = document.getElementById('newTicketForm');
+  
+  const customerModal = document.getElementById('addCustomerModal');
+  const closeCustomerModal = document.getElementById('closeCustomerModal');
+  const cancelCustomerModal = document.getElementById('cancelCustomerModal');
+  const addCustomerForm = document.getElementById('addCustomerForm');
+
+  closeModal.addEventListener('click', closeNewTicketModal);
+  cancelModal.addEventListener('click', closeNewTicketModal);
+  closeCustomerModal.addEventListener('click', closeAddCustomerModal);
+  cancelCustomerModal.addEventListener('click', closeAddCustomerModal);
+  
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) {
+      closeNewTicketModal();
+    }
+  });
+  
+  customerModal.addEventListener('click', function(e) {
+    if (e.target === customerModal) {
+      closeAddCustomerModal();
+    }
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (customerModal.classList.contains('active')) {
+        closeAddCustomerModal();
+      } else if (modal.classList.contains('active')) {
+        closeNewTicketModal();
+      }
+    }
+  });
+
+  // Customer search functionality
+  const customerNameInput = document.getElementById('customerName');
+  customerNameInput.addEventListener('input', function(e) {
+    const query = e.target.value.trim();
+    selectedCustomer = null;
+    
+    if (query.length >= 2) {
+      const results = searchCustomers(query);
+      showCustomerSuggestions(results, query);
+    } else {
+      hideCustomerSuggestions();
+    }
+  });
+  
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.form-group')) {
+      hideCustomerSuggestions();
+    }
+  });
+
+  newTicketForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+      customerName: document.getElementById('customerName').value,
+      deviceType: document.getElementById('deviceType').value,
+      deviceBrand: document.getElementById('deviceBrand').value,
+      problemDescription: document.getElementById('problemDescription').value
+    };
+    
+    createNewTicket(formData);
+  });
+  
+  addCustomerForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const customerData = {
+      firstName: document.getElementById('customerFirstName').value,
+      lastName: document.getElementById('customerLastName').value,
+      phone: document.getElementById('customerPhoneNumber').value,
+      email: document.getElementById('customerEmailAddress').value,
+      plan: document.getElementById('customerPlan').value
+    };
+    
+    addNewCustomer(customerData);
+  });
+
   navigateToPage('dashboard');
 });

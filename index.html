@@ -47,6 +47,93 @@
     <small>© Repair Store KS — demo</small>
   </footer>
 
+  <!-- New Ticket Modal -->
+  <div class="modal-overlay" id="newTicketModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Create New Ticket</h2>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <form class="modal-content" id="newTicketForm">
+        <div class="form-group">
+          <label for="customerName">Customer</label>
+          <input type="text" id="customerName" name="customerName" placeholder="Search customers..." required>
+          <small class="form-help">Start typing to search existing customers</small>
+          <div class="customer-suggestions" id="customerSuggestions"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="deviceType">Device Type</label>
+          <select id="deviceType" name="deviceType" required>
+            <option value="">Select device type...</option>
+            <option value="Laptop">Laptop</option>
+            <option value="Desktop">Desktop</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="deviceBrand">Brand</label>
+          <input type="text" id="deviceBrand" name="deviceBrand" placeholder="e.g., HP Pavilion, Dell Inspiron, Custom Build" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="problemDescription">Problem Description</label>
+          <textarea id="problemDescription" name="problemDescription" rows="3" placeholder="Describe the issue..." required></textarea>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelModal">Cancel</button>
+          <button type="submit" class="btn-primary">Create Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Customer Modal -->
+  <div class="modal-overlay" id="addCustomerModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add New Customer</h2>
+        <button class="modal-close" id="closeCustomerModal">&times;</button>
+      </div>
+      <form class="modal-content" id="addCustomerForm">
+        <div class="form-group">
+          <label for="customerFirstName">First Name</label>
+          <input type="text" id="customerFirstName" name="customerFirstName" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="customerLastName">Last Name</label>
+          <input type="text" id="customerLastName" name="customerLastName" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="customerPhoneNumber">Phone Number</label>
+          <input type="tel" id="customerPhoneNumber" name="customerPhoneNumber" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="customerEmailAddress">Email Address</label>
+          <input type="email" id="customerEmailAddress" name="customerEmailAddress" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="customerPlan">Service Plan</label>
+          <select id="customerPlan" name="customerPlan" required>
+            <option value="">Select plan...</option>
+            <option value="basic">Basic Plan</option>
+            <option value="silver">Silver Plan</option>
+          </select>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelCustomerModal">Cancel</button>
+          <button type="submit" class="btn-primary">Add Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
