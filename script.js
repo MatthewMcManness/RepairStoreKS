@@ -17,6 +17,35 @@ const TICKETS = [
 let currentPage = 'dashboard';
 let activeFilters = new Set(['new', 'diagnosing', 'escalated', 'call-customer', 'waiting-parts', 'waiting-customer', 'progress', 'completed', 'done-shelf', 'closed', 're-work']); // All statuses active by default
 let currentSearch = '';
+let isDarkMode = false;
+
+// Theme management
+function initializeTheme() {
+  // Check for saved theme preference or default to light mode
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  isDarkMode = savedTheme === 'dark';
+  applyTheme();
+}
+
+function applyTheme() {
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = themeToggle.querySelector('.theme-icon');
+  
+  if (isDarkMode) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    themeIcon.textContent = '☀️';
+    localStorage.setItem('theme', 'dark');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    themeIcon.textContent = '🌙';
+    localStorage.setItem('theme', 'light');
+  }
+}
+
+function toggleTheme() {
+  isDarkMode = !isDarkMode;
+  applyTheme();
+}
 
 // DOM Elements
 const subheader = document.getElementById('subheader');
@@ -414,6 +443,9 @@ function initializePageFunctionality() {
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
+  // Initialize theme first
+  initializeTheme();
+  
   // Navigation functionality
   const navButtons = document.querySelectorAll('.nav-btn');
   navButtons.forEach(btn => {
@@ -428,6 +460,10 @@ document.addEventListener('DOMContentLoaded', function() {
       hamburgerBtn.classList.remove('active');
     });
   });
+
+  // Theme toggle functionality
+  const themeToggle = document.getElementById('themeToggle');
+  themeToggle.addEventListener('click', toggleTheme);
 
   // Hamburger menu functionality
   const hamburgerBtn = document.getElementById('hamburgerBtn');
