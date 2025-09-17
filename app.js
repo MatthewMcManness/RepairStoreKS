@@ -1,21 +1,20 @@
 // Demo ticket data with plan information
 const TICKETS = [
   { id: "T-001", device: "HP Laptop", problem: "Broken screen", status: "In Progress", plan: "silver" },
-  { id: "T-002", device: "Dell Desktop", problem: "Won't boot", status: "New", plan: "basic" },
-  { id: "T-003", device: "MacBook Pro", problem: "Battery not charging", status: "Diagnosing", plan: "silver" },
+  { id: "T-002", device: "Dell Desktop", problem: "Won't boot", status: "Open", plan: "basic" },
+  { id: "T-003", device: "MacBook Pro", problem: "Battery not charging", status: "Open", plan: "silver" },
   { id: "T-004", device: "Custom PC", problem: "Slow performance", status: "Closed", plan: "basic" },
-  { id: "T-005", device: "Surface Laptop", problem: "Keyboard unresponsive", status: "Waiting for Parts", plan: "silver" },
-  { id: "T-006", device: "Acer Chromebook", problem: "Screen flickering", status: "Call Customer", plan: "basic" },
-  { id: "T-007", device: "Gaming PC", problem: "Graphics card failure", status: "Escalated", plan: "silver" },
-  { id: "T-008", device: "iPad Pro", problem: "Touch screen not responding", status: "Completed", plan: "basic" },
-  { id: "T-009", device: "ThinkPad", problem: "Hard drive corrupted", status: "Waiting on Customer", plan: "silver" },
-  { id: "T-010", device: "iMac", problem: "Won't turn on", status: "Done Shelf", plan: "silver" },
-  { id: "T-011", device: "Dell Laptop", problem: "Previous repair failed", status: "Re-Work", plan: "basic" }
+  { id: "T-005", device: "Surface Laptop", problem: "Keyboard unresponsive", status: "In Progress", plan: "silver" },
+  { id: "T-006", device: "Acer Chromebook", problem: "Screen flickering", status: "Open", plan: "basic" },
+  { id: "T-007", device: "Gaming PC", problem: "Graphics card failure", status: "Open", plan: "silver" },
+  { id: "T-008", device: "iPad Pro", problem: "Touch screen not responding", status: "Closed", plan: "basic" },
+  { id: "T-009", device: "ThinkPad", problem: "Hard drive corrupted", status: "In Progress", plan: "silver" },
+  { id: "T-010", device: "iMac", problem: "Won't turn on", status: "Open", plan: "silver" }
 ];
 
 // App State
 let currentPage = 'dashboard';
-let activeFilters = new Set(['new', 'diagnosing', 'escalated', 'call-customer', 'waiting-parts', 'waiting-customer', 'progress', 'completed', 'done-shelf', 'closed', 're-work']); // All statuses active by default
+let currentFilter = 'all';
 let currentSearch = '';
 
 // DOM Elements
@@ -24,30 +23,23 @@ const mainContent = document.getElementById('mainContent');
 
 // Map status to badge class
 const statusClass = (s) => {
-  const key = s.toLowerCase().replace(/\s+/g, '-');
-  if (key === 'new') return 'new';
-  if (key === 'diagnosing') return 'diagnosing';
-  if (key === 'escalated') return 'escalated';
-  if (key === 'call-customer') return 'call-customer';
-  if (key === 'waiting-for-parts') return 'waiting-parts';
-  if (key === 'waiting-on-customer') return 'waiting-customer';
-  if (key === 'in-progress') return 'progress';
-  if (key === 'completed') return 'completed';
-  if (key === 'done-shelf') return 'done-shelf';
-  if (key === 'closed') return 'closed';
-  if (key === 're-work') return 're-work';
-  return 'new'; // default
+  const key = s.toLowerCase();
+  if (key.includes("progress")) return "progress";
+  if (key.includes("closed")) return "closed";
+  return "open";
 };
 
 // Filter tickets based on current filters
 function getFilteredTickets() {
   let filtered = TICKETS;
   
-  // Apply status filter (only include tickets with active status filters)
-  filtered = filtered.filter(ticket => {
-    const statusKey = statusClass(ticket.status);
-    return activeFilters.has(statusKey);
-  });
+  // Apply status filter
+  if (currentFilter !== 'all') {
+    filtered = filtered.filter(ticket => {
+      const statusKey = statusClass(ticket.status);
+      return statusKey === currentFilter;
+    });
+  }
   
   // Apply search filter
   if (currentSearch) {
@@ -79,11 +71,7 @@ function renderTickets(containerId) {
   } else {
     filtered.forEach(t => {
       const row = document.createElement("div");
-      let ticketClass = `ticket`;
-      if (t.plan === 'silver') ticketClass += ' silver';
-      if (t.status === 'Re-Work' || t.status === 'Escalated') ticketClass += ' rework';
-      
-      row.className = ticketClass;
+      row.className = `ticket ${t.plan === 'silver' ? 'silver' : ''}`;
       row.innerHTML = `
         <span>${t.id}</span>
         <span class="device">${t.device}</span>
@@ -151,27 +139,16 @@ const PAGE_TEMPLATES = {
   },
   
   tickets: {
-    title: 'Tickets',
+    title: 'All Tickets',
     subheader: `
       <div class="subheader-content">
-        <h1>Tickets</h1>
-        <button class="action-btn primary" data-action="new-ticket">
-          <span class="btn-icon">+</span>
-          New Ticket
-        </button>
+        <h1>All Tickets</h1>
         <div class="subheader-actions">
           <div class="filter-buttons">
-            <button class="filter-btn active" data-status="new">New</button>
-            <button class="filter-btn active" data-status="diagnosing">Diagnosing</button>
-            <button class="filter-btn active" data-status="escalated">Escalated</button>
-            <button class="filter-btn active" data-status="call-customer">Call Customer</button>
-            <button class="filter-btn active" data-status="waiting-parts">Waiting for Parts</button>
-            <button class="filter-btn active" data-status="waiting-customer">Waiting on Customer</button>
-            <button class="filter-btn active" data-status="progress">In Progress</button>
-            <button class="filter-btn active" data-status="completed">Completed</button>
-            <button class="filter-btn active" data-status="done-shelf">Done Shelf</button>
-            <button class="filter-btn active" data-status="re-work">Re-Work</button>
-            <button class="filter-btn active" data-status="closed">Closed</button>
+            <button class="filter-btn active" data-status="all">All</button>
+            <button class="filter-btn" data-status="open">Open</button>
+            <button class="filter-btn" data-status="progress">In Progress</button>
+            <button class="filter-btn" data-status="closed">Closed</button>
           </div>
           <input id="ticketSearch" type="search" placeholder="Search tickets…" />
         </div>
@@ -351,11 +328,7 @@ function initializePageFunctionality() {
     container.innerHTML = "";
     recentTickets.forEach(t => {
       const row = document.createElement("div");
-      let ticketClass = `ticket`;
-      if (t.plan === 'silver') ticketClass += ' silver';
-      if (t.status === 'Re-Work' || t.status === 'Escalated') ticketClass += ' rework';
-      
-      row.className = ticketClass;
+      row.className = `ticket ${t.plan === 'silver' ? 'silver' : ''}`;
       row.innerHTML = `
         <span>${t.id}</span>
         <span class="device">${t.device}</span>
@@ -376,21 +349,13 @@ function initializePageFunctionality() {
       });
     }
     
-    // Filter buttons (now toggles)
+    // Filter buttons
     const filterButtons = document.querySelectorAll('.filter-btn');
     filterButtons.forEach(btn => {
       btn.addEventListener('click', function() {
-        const status = this.getAttribute('data-status');
-        
-        // Toggle the filter
-        if (activeFilters.has(status)) {
-          activeFilters.delete(status);
-          this.classList.remove('active');
-        } else {
-          activeFilters.add(status);
-          this.classList.add('active');
-        }
-        
+        filterButtons.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        currentFilter = this.getAttribute('data-status');
         renderTickets('ticketList');
         updateTicketCounter();
       });
