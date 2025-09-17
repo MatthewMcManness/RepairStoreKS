@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Repair Store KS — Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="dot"></span>
+      <strong>Repair Store KS</strong>
+    </div>
+    <nav class="main-nav">
+      <a class="is-active" href="#">Dashboard</a>
+      <a href="#">Tickets</a>
+      <a href="#">Customers</a>
+    </nav>
+  </header>
+
+  <!-- Page content -->
+  <main class="page">
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Recent Tickets</h2>
+        <div class="actions">
+          <input id="search" type="search" placeholder="Search tickets…" />
+          <button class="btn-primary">New Ticket</button>
+        </div>
+      </div>
+
+      <!-- Column labels -->
+      <div class="ticket-head">
+        <span>ID</span>
+        <span>Device</span>
+        <span>Problem</span>
+        <span>Status</span>
+      </div>
+
+      <!-- Ticket rows (JS fills this) -->
+      <div id="ticketList" class="ticket-list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <small>© Repair Store KS — demo</small>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
