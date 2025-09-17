@@ -18,6 +18,24 @@
   --radius:14px;
 }
 
+/* Dark theme */
+[data-theme="dark"] {
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --bg:#0f172a;
+  --white:#1e293b;
+  --sky-50:#1e293b;
+  --ring:#334155;
+  --shadow:0 6px 20px rgba(0, 0, 0, .3);
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(90vw 60vh at 100% -10%, #1e293b 10%, transparent 60%),
+    radial-gradient(90vw 60vh at -10% 110%, #1e293b 10%, transparent 60%),
+    var(--bg);
+}
+
 /* Reset-ish */
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
@@ -47,8 +65,16 @@ body{
   width:10px;height:10px;border-radius:50%;
   background:#7cf6a1; box-shadow:0 0 0 3px rgba(124,246,161,.25);
 }
+
+/* Header right side container */
+.header-controls{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
 .main-nav{ 
-  margin-left:auto; 
   display:flex; 
   gap:8px;
   background:rgba(255,255,255,0.1);
@@ -110,6 +136,35 @@ body{
   transform:rotate(-45deg) translate(7px, -6px);
 }
 
+/* Theme toggle button */
+.theme-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  height:36px;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:8px;
+  cursor:pointer;
+  transition:all 0.3s ease;
+  margin-left:auto;
+  margin-right:12px;
+}
+
+.theme-toggle:hover{
+  background:rgba(255,255,255,0.2);
+}
+
+.theme-icon{
+  font-size:18px;
+  transition:transform 0.3s ease;
+}
+
+.theme-toggle:hover .theme-icon{
+  transform:scale(1.1);
+}
+
 /* ==============================
    Layout
 ============================== */
@@ -120,6 +175,12 @@ body{
   background:linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
   border-bottom:1px solid #b3e5fc;
   padding:0;
+}
+
+/* Dark mode subheader */
+[data-theme="dark"] .subheader{
+  background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-bottom:1px solid #334155;
 }
 
 .subheader-content{
@@ -157,13 +218,19 @@ body{
 .filter-buttons{
   display:flex;
   gap:6px;
-  background:#fff;
+  background:var(--white);
   padding:4px;
   border-radius:12px;
   border:1px solid #e1e8f0;
   box-shadow:0 2px 4px rgba(0,0,0,0.05);
   flex-wrap:wrap;
   max-width:600px;
+}
+
+/* Dark mode filter buttons */
+[data-theme="dark"] .filter-buttons{
+  background:#334155;
+  border-color:#475569;
 }
 
 .filter-btn{
@@ -202,6 +269,17 @@ body{
   min-width:240px;
   outline:none;
   box-shadow:0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Dark mode subheader search */
+[data-theme="dark"] .subheader input[type="search"]{
+  background:#334155;
+  border-color:#475569;
+  color:#e2e8f0;
+}
+
+[data-theme="dark"] .subheader input[type="search"]::placeholder{
+  color:#94a3b8;
 }
 
 .subheader input[type="search"]::placeholder{ 
@@ -310,6 +388,11 @@ body{
   border:1px solid #eef1f6;
   overflow:hidden;
 }
+
+/* Dark mode panels */
+[data-theme="dark"] .panel{
+  border-color:#334155;
+}
 .panel-head{
   display:flex; align-items:center; gap:14px;
   justify-content:space-between;
@@ -317,13 +400,28 @@ body{
   background:linear-gradient(0deg, var(--sky-50), var(--sky-50));
   border-bottom:1px solid #ecf1fb;
 }
+
+/* Dark mode panel head */
+[data-theme="dark"] .panel-head{
+  border-bottom-color:#334155;
+}
 .panel-head h2{ margin:0; font-size:1.15rem; }
 .panel .actions{ display:flex; gap:10px; align-items:center; }
 .panel input[type="search"]{
   appearance:none; border:1px solid var(--ring);
-  background:#fff; color:var(--text);
+  background:var(--white); color:var(--text);
   padding:10px 12px; border-radius:10px; min-width:240px;
   outline:none;
+}
+
+/* Dark mode panel search */
+[data-theme="dark"] .panel input[type="search"]{
+  background:#334155;
+  border-color:#475569;
+}
+
+[data-theme="dark"] .panel input[type="search"]::placeholder{
+  color:#94a3b8;
 }
 .panel input[type="search"]::placeholder{ color:#8ea6ce; }
 .btn-primary{
@@ -344,10 +442,20 @@ body{
   border-bottom:1px solid #edf1f8;
 }
 
+/* Dark mode ticket head */
+[data-theme="dark"] .ticket-head{
+  border-bottom-color:#334155;
+}
+
 /* ==============================
    Ticket pill rows
 ============================== */
 .ticket-list{ padding:14px; background:linear-gradient(0deg, #fafcff, #fafcff); }
+
+/* Dark mode ticket list */
+[data-theme="dark"] .ticket-list{
+  background:linear-gradient(0deg, #1e293b, #1e293b);
+}
 
 .ticket{
   display:grid;
@@ -356,13 +464,19 @@ body{
   align-items:center;
   padding:14px 16px;
   border-radius:999px;
-  background:#fff;
+  background:var(--white);
   border:1px solid #e6eefc;
   box-shadow:0 2px 10px rgba(31,111,224,.06);
   margin:10px 6px;
   position:relative;
   overflow:hidden;
   transition: transform 0.2s ease;
+}
+
+/* Dark mode tickets */
+[data-theme="dark"] .ticket{
+  border-color:#475569;
+  box-shadow:0 2px 10px rgba(0,0,0,.2);
 }
 
 .ticket:hover {
