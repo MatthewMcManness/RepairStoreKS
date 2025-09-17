@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Repair Store KS — Dashboard</title>
+  <title>Repair Store KS</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,56 +19,23 @@
       <span></span>
     </button>
     <nav class="main-nav" id="mainNav">
-      <button class="nav-btn active">Dashboard</button>
-      <button class="nav-btn">Tickets</button>
-      <button class="nav-btn">Customers</button>
-      <button class="nav-btn">Invoices</button>
-      <button class="nav-btn">Estimates</button>
-      <button class="nav-btn">Inventory</button>
+      <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+      <button class="nav-btn" data-page="tickets">Tickets</button>
+      <button class="nav-btn" data-page="customers">Customers</button>
+      <button class="nav-btn" data-page="invoices">Invoices</button>
+      <button class="nav-btn" data-page="estimates">Estimates</button>
+      <button class="nav-btn" data-page="inventory">Inventory</button>
     </nav>
   </header>
 
+  <!-- Dynamic Subheader -->
+  <section class="subheader" id="subheader">
+    <!-- Content will be dynamically inserted here -->
+  </section>
+
   <!-- Page content -->
-  <main class="page">
-    <!-- Action buttons -->
-    <div class="action-buttons">
-      <button class="action-btn primary">
-        <span class="btn-icon">+</span>
-        New Ticket
-      </button>
-      <button class="action-btn primary">
-        <span class="btn-icon">👤</span>
-        New Customer
-      </button>
-      <button class="action-btn primary">
-        <span class="btn-icon">📄</span>
-        New Invoice
-      </button>
-      <button class="action-btn primary">
-        <span class="btn-icon">💰</span>
-        New Estimate
-      </button>
-    </div>
-
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Recent Tickets</h2>
-        <div class="actions">
-          <input id="search" type="search" placeholder="Search tickets…" />
-        </div>
-      </div>
-
-      <!-- Column labels -->
-      <div class="ticket-head">
-        <span>ID</span>
-        <span>Device</span>
-        <span>Problem</span>
-        <span>Status</span>
-      </div>
-
-      <!-- Ticket rows (JS fills this) -->
-      <div id="ticketList" class="ticket-list"></div>
-    </section>
+  <main class="page" id="mainContent">
+    <!-- Content will be dynamically inserted here -->
   </main>
 
   <footer class="app-footer">
