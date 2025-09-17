@@ -5,6 +5,9 @@
   --blue-600:#1f6fe0;
   --blue-500:#2f80ed;
   --blue-100:#eaf3ff;
+  --navy-700:#1e3a8a;
+  --navy-600:#1e40af;
+  --navy-500:#3b82f6;
   --sky-50:#f5f9ff;
   --ring:#cfe2ff;
   --text:#1d2433;
@@ -44,16 +47,80 @@ body{
   width:10px;height:10px;border-radius:50%;
   background:#7cf6a1; box-shadow:0 0 0 3px rgba(124,246,161,.25);
 }
-.main-nav{ margin-left:auto; display:flex; gap:18px; }
-.main-nav a{
-  color:#e9f2ff; text-decoration:none; padding:6px 4px; border-radius:8px;
+.main-nav{ margin-left:auto; display:flex; gap:12px; }
+.nav-btn{
+  background:rgba(255,255,255,0.1);
+  color:#e9f2ff;
+  border:1px solid rgba(255,255,255,0.2);
+  padding:8px 16px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:500;
+  transition:all 0.2s ease;
 }
-.main-nav a.is-active{ color:#fff; text-decoration:underline; text-underline-offset:4px; }
+.nav-btn:hover{
+  background:rgba(255,255,255,0.2);
+  color:#fff;
+}
+.nav-btn.active{
+  background:#fff;
+  color:var(--blue-600);
+  border-color:#fff;
+}
 
 /* ==============================
    Layout
 ============================== */
 .page{ padding:28px 20px 64px; max-width:1100px; margin:0 auto; }
+
+/* Action buttons */
+.action-buttons{
+  display:flex;
+  gap:16px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+}
+
+.action-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 20px;
+  border-radius:12px;
+  font-weight:600;
+  font-size:0.95rem;
+  cursor:pointer;
+  transition:all 0.2s ease;
+  border:none;
+  box-shadow:0 2px 8px rgba(30, 58, 138, 0.15);
+}
+
+.action-btn.primary{
+  background:linear-gradient(135deg, var(--navy-700), var(--navy-600));
+  color:#fff;
+}
+
+.action-btn.primary:hover{
+  background:linear-gradient(135deg, var(--navy-600), var(--navy-500));
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(30, 58, 138, 0.25);
+}
+
+.action-btn.secondary{
+  background:linear-gradient(135deg, #64748b, #475569);
+  color:#fff;
+}
+
+.action-btn.secondary:hover{
+  background:linear-gradient(135deg, #475569, #334155);
+  transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(71, 85, 105, 0.25);
+}
+
+.btn-icon{
+  font-size:1.1rem;
+  font-weight:bold;
+}
 
 /* Card / panel */
 .panel{
@@ -232,6 +299,8 @@ body{
   .ticket-head,
   .ticket{ grid-template-columns: 70px 1fr 1.5fr 130px; }
   .panel input[type="search"]{ min-width:180px; }
+  .action-buttons{ gap:12px; }
+  .action-btn{ padding:10px 16px; font-size:0.9rem; }
 }
 @media (max-width: 640px){
   .main-nav{ display:none; }
@@ -245,4 +314,12 @@ body{
   .badge{ min-width:unset; width:max-content; }
   .device{ order:1; }
   .problem{ order:2; }
+  .action-buttons{
+    flex-direction:column;
+    gap:10px;
+  }
+  .action-btn{
+    width:100%;
+    justify-content:center;
+  }
 }
